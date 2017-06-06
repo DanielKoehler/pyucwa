@@ -7,9 +7,21 @@ import json
 USER_AGENT = 'SkypeWeb/0.4.275 master UCWA/1.0.0-e4a1abbd7ca7d-84c26b3703da8'
 
 
-def do_autodiscover(domain):
-    r = requests.get('https://webdir.online.lync.com/autodiscover/autodiscoverservice.svc/root?originalDomain=%s' % domain)
+def do_autodiscover(domain, fully_qualified=False):
+
+    if not fully_qualified:
+        domain = 'https://webdir.online.lync.com/autodiscover/autodiscoverservice.svc/root?originalDomain=%s' % domain
+
+    r = requests.get(domain)
     discovery = r.json()
+
+
+    if 'redirect' in discovery['_links']:
+        r = requests.get(discovery['_links']['redirect']['href'])
+        discovery = r.json()
+
+    print(discovery)
+
     path = discovery['_links']['user']['href']
     domain = urlparse(path)
     host = '{0}://{1}'.format(domain.scheme, domain.netloc)
@@ -17,6 +29,10 @@ def do_autodiscover(domain):
 
 
 def do_user_discovery(resource, token, config):
+
+    print(resource + '/Autodiscover/AutodiscoverService.svc/root/oauth/user')
+    print(config['redirect_uri'])
+
     return oauth_request(
         resource + '/Autodiscover/AutodiscoverService.svc/root/oauth/user', token,
         config['redirect_uri'])
@@ -122,6 +138,10 @@ def oauth_request(uri, oauth_token, origin):
         'X-Ms-SDK-Instance': USER_AGENT,
         'Referer': origin + '/'
     }
+
+    for a,b in headers.iteritems():
+        print a, ":", b
+
     response = requests.get(uri, headers=headers, verify=False)
     response.raise_for_status()
     return response.json()
