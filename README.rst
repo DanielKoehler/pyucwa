@@ -39,7 +39,7 @@ Create a file config.yml with similar details
 
 Start the web server
 
-    python -m runserver
+    python -m ucwa.http
 
 
 Run a login session to get a token for the application
