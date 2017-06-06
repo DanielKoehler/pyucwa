@@ -23,6 +23,8 @@ def autodiscover():
 
 @app.route('/token', methods=['POST'])
 def token_stage():
+
+
     # find out where this account is
     xframe, user_discovery_uri, resource = do_autodiscover(config['domain'])
 
@@ -33,11 +35,16 @@ def token_stage():
     # discover which web server we have been assigned to
     user_discovery_data = do_user_discovery(resource, token, config)
 
+
+
+    
+
     # Link to the current session server resource (we need a token for this.)
     instance_url = user_discovery_data['_links']['applications']['href']
 
     instance_parts = urlparse(instance_url)
     instance_resource = '{0}://{1}'.format(instance_parts.scheme, instance_parts.netloc)
+
 
     url = grant_flow_token(config['client_id'],
                                      config['redirect_uri'] + '/directsession',
@@ -65,4 +72,3 @@ def direct_sesssion_stage():
 
     return 'done. now run app.py'
 
-app.run()
